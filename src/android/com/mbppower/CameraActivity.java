@@ -664,6 +664,7 @@ class Preview extends RelativeLayout implements SurfaceHolder.Callback {
         } catch (Exception exception) {
             Log.e(TAG, "Exception caused by surfaceDestroyed()", exception);
         }
+    }
     public Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int w, int h) {
         if (sizes == null) return null;
 
