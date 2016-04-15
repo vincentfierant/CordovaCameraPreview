@@ -46,12 +46,12 @@ public class CameraActivity extends Fragment {
 
 
     public interface CameraPreviewListener {
-		public void onPictureTaken(String originalPicturePath);
+        public void onPictureTaken(String originalPicturePath);
     }
 
 
     private CameraPreviewListener eventListener;
-	private static final String TAG = "CameraActivity";
+    private static final String TAG = "CameraActivity";
     public FrameLayout mainLayout;
     public FrameLayout frameContainerLayout;
 
@@ -146,9 +146,9 @@ public class CameraActivity extends Fragment {
         super.onResume();
 
         mCamera = Camera.open(defaultCameraId);
-	
+
         if (cameraParameters != null) {
-	    mCamera.setParameters(cameraParameters);
+            mCamera.setParameters(cameraParameters);
 
         }
 
@@ -188,9 +188,9 @@ public class CameraActivity extends Fragment {
         // Because the Camera object is a shared resource, it's very
         // important to release it when the activity is paused.
         if (mCamera != null) {
-	        setDefaultCameraId();
+            setDefaultCameraId();
             mPreview.setCamera(null, -1);
-            mCamera.setPreviewCallback(null);           
+            mCamera.setPreviewCallback(null);
             mCamera.release();
             mCamera = null;
         }
@@ -213,7 +213,7 @@ public class CameraActivity extends Fragment {
             if (mCamera != null) {
                 mCamera.stopPreview();
                 mPreview.setCamera(null, -1);
-                mCamera.setPreviewCallback(null);                
+                mCamera.setPreviewCallback(null);
                 mCamera.release();
                 mCamera = null;
             }
@@ -503,11 +503,11 @@ class Preview extends RelativeLayout implements SurfaceHolder.Callback {
         Log.d(TAG, "printPreviewSize from " + from + ": > width: " + mPreviewSize.width + " height: " + mPreviewSize.height);
     }
     public void setCameraPreviewSize() {
-	if (mCamera != null) {
-	    Camera.Parameters parameters = mCamera.getParameters();
-	    parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
-	    mCamera.setParameters(parameters);
-	}
+        if (mCamera != null) {
+            Camera.Parameters parameters = mCamera.getParameters();
+            parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
+            mCamera.setParameters(parameters);
+        }
     }
     private void setCameraDisplayOrientation() {
         Camera.CameraInfo info = new Camera.CameraInfo();

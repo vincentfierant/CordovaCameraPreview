@@ -19,8 +19,11 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.lang.Error;
 import java.util.List;
 import java.util.Arrays;
+
+import javafx.scene.Camera;
 
 public class CameraPreview extends CordovaPlugin implements CameraActivity.CameraPreviewListener {
 
@@ -35,24 +38,26 @@ public class CameraPreview extends CordovaPlugin implements CameraActivity.Camer
     private final String hideCameraAction = "hideCamera";
 
     private final String getSupportedPreviewSizesAction = "getSupportedPreviewSizes";
-    private final String getSupportedPictureSizesAction = "getSupportedPictureSizes";    
+    private final String getSupportedPictureSizesAction = "getSupportedPictureSizes";
+
+    private final String getCameraFOV = "getCameraFOV";
 
 
     private final String [] permissions = {
-        Manifest.permission.CAMERA,
-        Manifest.permission.READ_EXTERNAL_STORAGE,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.CAMERA,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
 
     private final int permissionsReqId = 0;
-    
+
     private CameraActivity fragment;
     private CallbackContext takePictureCallbackContext;
     private CallbackContext wLogCallbackContext;
 
     private CallbackContext execCallback;
     private JSONArray execArgs;
-    
+
     private int containerViewId = 1;
     public CameraPreview() {
 
@@ -90,7 +95,9 @@ public class CameraPreview extends CordovaPlugin implements CameraActivity.Camer
             return getSupportedResolutions("previews", callbackContext);
         } else if (getSupportedPictureSizesAction.equals(action)) {
             return getSupportedResolutions("pictures", callbackContext);
-        }        
+        } else if (getCameraFOV.equals(action)) {
+            return getCameraFOV(args, callbackContext);
+        }
 
         return false;
     }
@@ -98,58 +105,75 @@ public class CameraPreview extends CordovaPlugin implements CameraActivity.Camer
     @Override
     public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) throws JSONException {
         for(int r:grantResults)
+        {
+            if(r == PackageManager.PERMISSION_DENIED)
             {
-                if(r == PackageManager.PERMISSION_DENIED)
-                    {
-                        execCallback.sendPluginResult(new PluginResult(PluginResult.Status.ILLEGAL_ACCESS_EXCEPTION));
-                        return;
-                    }
+                execCallback.sendPluginResult(new PluginResult(PluginResult.Status.ILLEGAL_ACCESS_EXCEPTION));
+                return;
             }
+        }
         if (requestCode == permissionsReqId) {
             startCamera(execArgs, execCallback);
         }
     }
-    
-    private boolean getSupportedResolutions(final String type, CallbackContext callbackContext) {
-    
-    List<Camera.Size> supportedSizes;
-    Camera camera = fragment.getCamera();
 
-    if (camera != null) {
-        supportedSizes = (type.equals("previews")) ? camera.getParameters().getSupportedPreviewSizes() : camera.getParameters().getSupportedPictureSizes();
-        if (supportedSizes != null) {
-            JSONArray sizes = new JSONArray();
-            for (int i=0; i<supportedSizes.size(); i++) {
-                Camera.Size size = supportedSizes.get(i);
-                int h = size.height;
-                int w = size.width;
-                JSONObject jsonSize = new JSONObject();
-                try {
-                    jsonSize.put("height", new Integer(h));
-                    jsonSize.put("width", new Integer(w));
-                }
-                catch(Exception e){
-                    e.printStackTrace();
-                }
-                sizes.put(jsonSize);
+    private boolean getCameraFOV(callbackContext) {
+        Camera camera = fragment.getCamera();
+
+        if (camera != null) {
+            try {
+                callbackContext.success(Math.toRadians(camera.getParameters().getVerticalViewAngle()));
+                return true;
+
+            } catch (Error e) {
+                callbackContext.error("Camera getCameraFOV error: " + e.getMessage());
+                return false;
             }
-            callbackContext.success(sizes);
-            return true;
         }
-        callbackContext.error("Camera Parameters access error");
+        callbackContext.error("Camera needs to be started first");
         return false;
     }
-    callbackContext.error("Camera needs to be started first");
-    return false;
 
-    }    
+    private boolean getSupportedResolutions(final String type, CallbackContext callbackContext) {
+
+        List<Camera.Size> supportedSizes;
+        Camera camera = fragment.getCamera();
+
+        if (camera != null) {
+            supportedSizes = (type.equals("previews")) ? camera.getParameters().getSupportedPreviewSizes() : camera.getParameters().getSupportedPictureSizes();
+            if (supportedSizes != null) {
+                JSONArray sizes = new JSONArray();
+                for (int i=0; i<supportedSizes.size(); i++) {
+                    Camera.Size size = supportedSizes.get(i);
+                    int h = size.height;
+                    int w = size.width;
+                    JSONObject jsonSize = new JSONObject();
+                    try {
+                        jsonSize.put("height", new Integer(h));
+                        jsonSize.put("width", new Integer(w));
+                    }
+                    catch(Exception e){
+                        e.printStackTrace();
+                    }
+                    sizes.put(jsonSize);
+                }
+                callbackContext.success(sizes);
+                return true;
+            }
+            callbackContext.error("Camera Parameters access error");
+            return false;
+        }
+        callbackContext.error("Camera needs to be started first");
+        return false;
+
+    }
 
     private boolean startCamera(final JSONArray args, CallbackContext callbackContext) {
         if (fragment != null) {
             return false;
         }
 
-        
+
         fragment = new CameraActivity();
         fragment.setEventListener(this);
         final CallbackContext cb = callbackContext;
@@ -189,12 +213,12 @@ public class CameraPreview extends CordovaPlugin implements CameraActivity.Camer
                     }
                     //display camera bellow the webview
                     if (toBack) {
-						webView.getView().setBackgroundColor(0x00000000);
-						((ViewGroup)webView.getView()).bringToFront();
-					}
-					else{
+                        webView.getView().setBackgroundColor(0x00000000);
+                        ((ViewGroup)webView.getView()).bringToFront();
+                    }
+                    else{
                         //set camera back to front
-						containerView.setAlpha(Float.parseFloat(args.getString(8)));
+                        containerView.setAlpha(Float.parseFloat(args.getString(8)));
                         containerView.bringToFront();
                     }
 
@@ -209,7 +233,7 @@ public class CameraPreview extends CordovaPlugin implements CameraActivity.Camer
                     e.printStackTrace();
                     cb.error("Camera start error");
                 }
-                
+
             }
         });
         return true;
@@ -239,9 +263,9 @@ public class CameraPreview extends CordovaPlugin implements CameraActivity.Camer
         return true;
     }
 
-	public void onPictureTaken(String originalPicturePath){
+    public void onPictureTaken(String originalPicturePath){
         JSONArray data = new JSONArray();
-		data.put(originalPicturePath);
+        data.put(originalPicturePath);
         PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, data);
         pluginResult.setKeepCallback(true);
         takePictureCallbackContext.sendPluginResult(pluginResult);
