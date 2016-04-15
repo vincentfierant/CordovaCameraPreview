@@ -46,7 +46,7 @@ public class CameraActivity extends Fragment {
 
 
     public interface CameraPreviewListener {
-		public void onPictureTaken(String originalPicturePath, String previewPicturePath);
+		public void onPictureTaken(String originalPicturePath);
     }
 
 
