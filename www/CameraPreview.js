@@ -18,8 +18,9 @@ CameraPreview.setOnLogHandler = function(onLog) {
 
 //@param rect {x: 0, y: 0, width: 100, height:100}
 //@param defaultCamera "front" | "back"
-CameraPreview.startCamera = function(rect, startCamera, callback) {
-  exec(callback, callback, PLUGIN_NAME, "startCamera", [rect.x, rect.y, rect.width, rect.height, startCamera, false, false, true]);
+CameraPreview.startCamera = function(rect, defaultCamera, tapEnabled, dragEnabled, toBack, alpha) {
+  if (typeof(alpha) === 'undefined') alpha = 1;
+  exec(null, null, PLUGIN_NAME, "startCamera", [rect.x, rect.y, rect.width, rect.height, defaultCamera, !!tapEnabled, !!dragEnabled, !!toBack, alpha]);
 };
 CameraPreview.stopCamera = function() {
   exec(null, null, PLUGIN_NAME, "stopCamera", []);

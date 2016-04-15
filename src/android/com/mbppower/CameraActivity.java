@@ -46,12 +46,12 @@ public class CameraActivity extends Fragment {
 
 
     public interface CameraPreviewListener {
-        void onPictureTaken(String originalPicture);
+		public void onPictureTaken(String originalPicturePath, String previewPicturePath);
     }
 
 
     private CameraPreviewListener eventListener;
-    private static final String TAG = "CameraPreview";
+	private static final String TAG = "CameraActivity";
     public FrameLayout mainLayout;
     public FrameLayout frameContainerLayout;
 
@@ -153,7 +153,13 @@ public class CameraActivity extends Fragment {
         }
 
         cameraCurrentlyLocked = defaultCameraId;
-        mPreview.setCamera(mCamera, cameraCurrentlyLocked);
+
+        if(mPreview.mPreviewSize == null){
+            mPreview.setCamera(mCamera, cameraCurrentlyLocked);
+        } else {
+            mPreview.switchCamera(mCamera, cameraCurrentlyLocked);
+            mCamera.startPreview();
+        }
 
         Log.d(TAG, "cameraCurrentlyLocked:" + cameraCurrentlyLocked);
 
@@ -182,7 +188,7 @@ public class CameraActivity extends Fragment {
         // Because the Camera object is a shared resource, it's very
         // important to release it when the activity is paused.
         if (mCamera != null) {
-	    setDefaultCameraId();
+	        setDefaultCameraId();
             mPreview.setCamera(null, -1);
             mCamera.setPreviewCallback(null);           
             mCamera.release();
@@ -452,7 +458,7 @@ public class CameraActivity extends Fragment {
 }
 
 class Preview extends RelativeLayout implements SurfaceHolder.Callback {
-    private final String TAG = "CameraPreview";
+    private final String TAG = "Preview";
 
     CustomSurfaceView mSurfaceView;
     SurfaceHolder mHolder;
@@ -577,14 +583,6 @@ class Preview extends RelativeLayout implements SurfaceHolder.Callback {
 
         if (mSupportedPreviewSizes != null) {
             mPreviewSize = getOptimalPreviewSize(mSupportedPreviewSizes, width, height);
-
-           /* Log.d(TAG, "onMeasure: > width: " + mPreviewSize.width + " height: " + mPreviewSize.height);
-
-            Camera.Parameters parameters = mCamera.getParameters();
-            parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
-            mCamera.setParameters(parameters);*/
-
-
         }
     }
 
@@ -666,46 +664,6 @@ class Preview extends RelativeLayout implements SurfaceHolder.Callback {
         } catch (Exception exception) {
             Log.e(TAG, "Exception caused by surfaceDestroyed()", exception);
         }
-    }
-
-    /*private Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int w, int h) {
-        final double ASPECT_TOLERANCE = 0.1;
-        double targetRatio = (double) w / h;
-        if (displayOrientation == 90 || displayOrientation == 270) {
-            targetRatio = (double) h / w;
-        }
-        if (sizes == null) return null;
-
-        Camera.Size optimalSize = null;
-        double minDiff = Double.MAX_VALUE;
-
-        int targetHeight = h;
-
-        // Try to find an size match aspect ratio and size
-        for (Camera.Size size : sizes) {
-            double ratio = (double) size.width / size.height;
-            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) continue;
-            if (Math.abs(size.height - targetHeight) < minDiff) {
-                optimalSize = size;
-                minDiff = Math.abs(size.height - targetHeight);
-            }
-        }
-
-        // Cannot find the one match the aspect ratio, ignore the requirement
-        if (optimalSize == null) {
-            minDiff = Double.MAX_VALUE;
-            for (Camera.Size size : sizes) {
-                if (Math.abs(size.height - targetHeight) < minDiff) {
-                    optimalSize = size;
-                    minDiff = Math.abs(size.height - targetHeight);
-                }
-            }
-        }
-
-        Log.d(TAG, "optimal preview size: w: " + optimalSize.width + " h: " + optimalSize.height);
-        return optimalSize;
-    }*/
-
     public Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int w, int h) {
         if (sizes == null) return null;
 
@@ -768,7 +726,7 @@ class Preview extends RelativeLayout implements SurfaceHolder.Callback {
 }
 
 class CustomSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
-    private final String TAG = "CameraPreview";
+    private final String TAG = "CustomSurfaceView";
 
     CustomSurfaceView(Context context) {
         super(context);

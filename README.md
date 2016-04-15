@@ -12,6 +12,7 @@ Show camera preview popup on top of the HTML.<br/>
   <li>Send the preview box to back of the HTML content.</li>
   <li>Set a custom position for the camera preview box.</li>
   <li>Set a custom size for the preview box.</li>
+  <li>Set a custom alpha for the preview box.</li>
   <li>Maintain HTML interactivity.</li>
 </ul>
 

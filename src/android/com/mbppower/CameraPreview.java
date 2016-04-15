@@ -73,7 +73,8 @@ public class CameraPreview extends CordovaPlugin implements CameraActivity.Camer
                 execArgs = args;
                 cordova.requestPermissions(this, 0, permissions);
             }
-        } else if (takePictureAction.equals(action)) {
+        }
+        else if (takePictureAction.equals(action)) {
             return takePicture(args, callbackContext);
         } else if (setColorEffectAction.equals(action)) {
             return setColorEffect(args, callbackContext);
@@ -144,9 +145,7 @@ public class CameraPreview extends CordovaPlugin implements CameraActivity.Camer
     }    
 
     private boolean startCamera(final JSONArray args, CallbackContext callbackContext) {
-        Log.d(TAG, "start camera action");
         if (fragment != null) {
-            callbackContext.error("Camera already started");
             return false;
         }
 
@@ -192,12 +191,10 @@ public class CameraPreview extends CordovaPlugin implements CameraActivity.Camer
                     if (toBack) {
 						webView.getView().setBackgroundColor(0x00000000);
 						((ViewGroup)webView.getView()).bringToFront();
-//                        webView.setBackgroundColor(0x00000000);
-//                        ViewGroup g = (ViewGroup) webView.getParent();
-//                        g.setBackgroundColor(0x00000000);
-//                        g.bringToFront();
-                    } else {
+					}
+					else{
                         //set camera back to front
+						containerView.setAlpha(Float.parseFloat(args.getString(8)));
                         containerView.bringToFront();
                     }
 
@@ -206,22 +203,15 @@ public class CameraPreview extends CordovaPlugin implements CameraActivity.Camer
                     FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                     fragmentTransaction.add(containerView.getId(), fragment);
                     fragmentTransaction.commit();
-
-
-//                    Log.d("CameraPreview", "before switch");
-//                    fragment.switchCamera();
-//                    Log.d("CameraPreview", "after switch");
-
                     cb.success("Camera started");
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     e.printStackTrace();
-                    cb.error("Camera start error");                    
-
+                    cb.error("Camera start error");
                 }
                 
             }
         });
-//        fragment.printPreviewSize("previewStartCamera");
         return true;
     }
 
@@ -249,21 +239,13 @@ public class CameraPreview extends CordovaPlugin implements CameraActivity.Camer
         return true;
     }
 
-    public void onPictureTaken(String originalPicture) {
+	public void onPictureTaken(String originalPicturePath, String previewPicturePath){
         JSONArray data = new JSONArray();
-        data.put(originalPicture);
+		data.put(originalPicturePath).put(previewPicturePath);
         PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, data);
         pluginResult.setKeepCallback(true);
         takePictureCallbackContext.sendPluginResult(pluginResult);
     }
-
-    /*public void onPictureTaken(String originalPicturePath, String previewPicturePath) {
-        JSONArray data = new JSONArray();
-        data.put(originalPicturePath).put(previewPicturePath);
-        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, data);
-        pluginResult.setKeepCallback(true);
-        takePictureCallbackContext.sendPluginResult(pluginResult);
-    }*/
 
     private boolean setColorEffect(final JSONArray args, CallbackContext callbackContext) {
         if (fragment == null) {

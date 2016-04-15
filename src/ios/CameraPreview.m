@@ -46,6 +46,8 @@
             [self.viewController.view insertSubview:self.cameraRenderController.view atIndex:0];
         }
         else{
+             self.cameraRenderController.view.alpha = (CGFloat)[command.arguments[8] floatValue];
+
              [self.viewController.view addSubview:self.cameraRenderController.view];
         }
 
