@@ -62,8 +62,8 @@ CameraPreview.getSupportedPictureSizes = function (callback) {
   exec(callback, callback, PLUGIN_NAME, "getSupportedPictureSizes", []);
 };
 
-CameraPreview.getCameraFOV = function (callback) {
-  exec(callback, callback, PLUGIN_NAME, "getCameraFOV", []);
+CameraPreview.getCameraFOV = function (successCallback, errorCallback) {
+  exec(successCallback, errorCallback, PLUGIN_NAME, "getCameraFOV", []);
 };
 
 module.exports = CameraPreview;

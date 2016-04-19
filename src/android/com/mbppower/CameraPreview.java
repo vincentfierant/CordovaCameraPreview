@@ -23,8 +23,6 @@ import java.lang.Error;
 import java.util.List;
 import java.util.Arrays;
 
-import javafx.scene.Camera;
-
 public class CameraPreview extends CordovaPlugin implements CameraActivity.CameraPreviewListener {
 
     private final String TAG = "CameraPreview";
@@ -40,13 +38,13 @@ public class CameraPreview extends CordovaPlugin implements CameraActivity.Camer
     private final String getSupportedPreviewSizesAction = "getSupportedPreviewSizes";
     private final String getSupportedPictureSizesAction = "getSupportedPictureSizes";
 
-    private final String getCameraFOV = "getCameraFOV";
+    private final String getCameraFOVAction = "getCameraFOV";
 
 
     private final String [] permissions = {
             Manifest.permission.CAMERA,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            //Manifest.permission.READ_EXTERNAL_STORAGE,
+            //Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
 
     private final int permissionsReqId = 0;
@@ -95,7 +93,7 @@ public class CameraPreview extends CordovaPlugin implements CameraActivity.Camer
             return getSupportedResolutions("previews", callbackContext);
         } else if (getSupportedPictureSizesAction.equals(action)) {
             return getSupportedResolutions("pictures", callbackContext);
-        } else if (getCameraFOV.equals(action)) {
+        } else if (getCameraFOVAction.equals(action)) {
             return getCameraFOV(args, callbackContext);
         }
 
@@ -117,15 +115,21 @@ public class CameraPreview extends CordovaPlugin implements CameraActivity.Camer
         }
     }
 
-    private boolean getCameraFOV(callbackContext) {
+    private boolean getCameraFOV(final JSONArray args, CallbackContext callbackContext) {
         Camera camera = fragment.getCamera();
 
         if (camera != null) {
             try {
-                callbackContext.success(Math.toRadians(camera.getParameters().getVerticalViewAngle()));
+                JSONObject jsonFOV = new JSONObject();
+                jsonFOV.put("vFOV", camera.getParameters().getVerticalViewAngle());
+                callbackContext.success(jsonFOV);
                 return true;
-
+            } catch (JSONException e) {
+                e.printStackTrace();
+                callbackContext.error("Camera getCameraFOV JSON error: " + e.getMessage());
+                return false;
             } catch (Error e) {
+                e.printStackTrace();
                 callbackContext.error("Camera getCameraFOV error: " + e.getMessage());
                 return false;
             }
