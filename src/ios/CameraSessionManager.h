@@ -5,6 +5,7 @@
 
 - (CameraSessionManager *)init;
 - (NSArray *) getDeviceFormats;
+- (NSString *)getDeviceCameraFOV;
 - (void) setupSession:(NSString *)defaultCamera;
 - (void) switchCamera;
 - (void) updateOrientation:(AVCaptureVideoOrientation)orientation;

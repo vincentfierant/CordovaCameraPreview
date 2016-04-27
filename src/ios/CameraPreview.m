@@ -131,8 +131,8 @@
     CDVPluginResult *pluginResult;
 
     if (self.cameraRenderController != NULL) {
-		CGFloat maxW = (CGFloat)[command.arguments[0] floatValue];
-    	CGFloat maxH = (CGFloat)[command.arguments[1] floatValue];
+        CGFloat maxW = (CGFloat)[command.arguments[0] floatValue];
+        CGFloat maxH = (CGFloat)[command.arguments[1] floatValue];
         [self invokeTakePicture:maxW withHeight:maxH];
     } else {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Camera not started"];
@@ -184,6 +184,23 @@
 
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
+
+- (void) getCameraFOV:(CDVInvokedUrlCommand*)command {
+    NSLog(@"getCameraFOV");
+    CDVPluginResult *pluginResult;
+    
+    if(self.sessionManager != nil){
+        
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:self.sessionManager.getDeviceCameraFOV];
+    }
+    else {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Camera not started"];
+    }
+    
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+
 - (void) getSupportedPreviewSizes:(CDVInvokedUrlCommand*)command {
     NSLog(@"getSupportedPreviewSizes");
     CDVPluginResult *pluginResult;
@@ -332,26 +349,26 @@
             UIImage *capturedImage  = [[UIImage alloc] initWithData:imageData];
             
             CIImage *capturedCImage;
-			//image resize
+            //image resize
             
-			if(maxWidth > 0 && maxHeight > 0){
-				CGFloat scaleHeight = maxWidth/capturedImage.size.height;
-				CGFloat scaleWidth = maxHeight/capturedImage.size.width;
-				CGFloat scale = scaleHeight > scaleWidth ? scaleWidth : scaleHeight;
+            if(maxWidth > 0 && maxHeight > 0){
+                CGFloat scaleHeight = maxWidth/capturedImage.size.height;
+                CGFloat scaleWidth = maxHeight/capturedImage.size.width;
+                CGFloat scale = scaleHeight > scaleWidth ? scaleWidth : scaleHeight;
 
-				CIFilter *resizeFilter = [CIFilter filterWithName:@"CILanczosScaleTransform"];
-				[resizeFilter setValue:[[CIImage alloc] initWithCGImage:[capturedImage CGImage]] forKey:kCIInputImageKey];
-				[resizeFilter setValue:[NSNumber numberWithFloat:1.0f] forKey:@"inputAspectRatio"];
-				[resizeFilter setValue:[NSNumber numberWithFloat:scale] forKey:@"inputScale"];
-				capturedCImage = [resizeFilter outputImage];
-			}
+                CIFilter *resizeFilter = [CIFilter filterWithName:@"CILanczosScaleTransform"];
+                [resizeFilter setValue:[[CIImage alloc] initWithCGImage:[capturedImage CGImage]] forKey:kCIInputImageKey];
+                [resizeFilter setValue:[NSNumber numberWithFloat:1.0f] forKey:@"inputAspectRatio"];
+                [resizeFilter setValue:[NSNumber numberWithFloat:scale] forKey:@"inputScale"];
+                capturedCImage = [resizeFilter outputImage];
+            }
             else{
                 capturedCImage = [[CIImage alloc] initWithCGImage:[capturedImage CGImage]];
             }
             
-			CIImage *imageToFilter;
-			CIImage *finalCImage;
-			
+            CIImage *imageToFilter;
+            CIImage *finalCImage;
+            
             //fix front mirroring
             if (self.sessionManager.defaultCamera == AVCaptureDevicePositionFront) {
                CGAffineTransform matrix = CGAffineTransformTranslate(CGAffineTransformMakeScale(1, -1), 0, capturedCImage.extent.size.height);

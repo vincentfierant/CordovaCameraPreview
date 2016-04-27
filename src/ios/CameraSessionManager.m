@@ -18,6 +18,20 @@
   AVCaptureDevice *videoDevice = [CameraSessionManager deviceWithMediaType:AVMediaTypeVideo preferringPosition:self.defaultCamera];
   return videoDevice.formats;
 }
+
+
+-(NSString * ) getDeviceCameraFOV
+{
+    AVCaptureDevice *device = [CameraSessionManager deviceWithMediaType:AVMediaTypeVideo preferringPosition:self.defaultCamera];
+    float hFov = device.activeFormat.videoFieldOfView;
+    
+    float ratio = device.activeFormat.highResolutionStillImageDimensions.width*1.0f / device.activeFormat.highResolutionStillImageDimensions.height*1.0f;
+    
+    float vFov = 2.0f * atan(tan((hFov /180.0f* M_PI)/2.0f) * 1.0f/ratio) * ( 180.0 / M_PI );
+    
+    return [NSString stringWithFormat:@"%f" , vFov];
+}
+
 - (AVCaptureVideoOrientation) getCurrentOrientation/*:(UIInterfaceOrientation)toInterfaceOrientation*/
 {
     return [self getCurrentOrientation: [[UIApplication sharedApplication] statusBarOrientation]];
