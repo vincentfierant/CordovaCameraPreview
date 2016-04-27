@@ -120,8 +120,12 @@ public class CameraPreview extends CordovaPlugin implements CameraActivity.Camer
 
         if (camera != null) {
             try {
+                Camera.Parameters params = camera.getParameters();
                 JSONObject jsonFOV = new JSONObject();
-                jsonFOV.put("vFOV", camera.getParameters().getVerticalViewAngle());
+                jsonFOV.put("vFOV", params.getVerticalViewAngle());
+                jsonFOV.put("videoStabilizationBefore", params.getVideoStabilization());
+                params.setVideoStabilization(false);
+                jsonFOV.put("videoStabilizationAfter", params.getVideoStabilization());
                 callbackContext.success(jsonFOV);
                 return true;
             } catch (JSONException e) {
