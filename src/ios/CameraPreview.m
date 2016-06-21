@@ -185,6 +185,18 @@
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
+-(void) setBlurEffect:(CDVInvokedUrlCommand*)command {
+    NSLog(@"setBlurEffect");
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    NSString *filterValue = command.arguments[0];    
+    dispatch_async(self.sessionManager.sessionQueue, ^{
+        CIFilter *filter = [CIFilter filterWithName:@"CIGaussianBlur"];
+        [filter setDefaults];
+        [self.sessionManager setCiFilter:filter];
+    });
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
 - (void) getCameraFOV:(CDVInvokedUrlCommand*)command {
     NSLog(@"getCameraFOV");
     CDVPluginResult *pluginResult;

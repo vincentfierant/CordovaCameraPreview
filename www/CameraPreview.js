@@ -38,6 +38,10 @@ CameraPreview.setColorEffect = function(effect) {
   exec(null, null, PLUGIN_NAME, "setColorEffect", [effect]);
 };
 
+CameraPreview.setBlurEffect = function(value) {
+  exec(null, null, PLUGIN_NAME, "setBlurEffect", [value]);
+};
+
 CameraPreview.switchCamera = function(callback) {
   exec(callback, callback, PLUGIN_NAME, "switchCamera", []);
 };
