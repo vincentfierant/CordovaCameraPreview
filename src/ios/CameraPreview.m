@@ -8,13 +8,13 @@
 @implementation CameraPreview
 
 - (void) startCamera:(CDVInvokedUrlCommand*)command {
- 
+    
     CDVPluginResult *pluginResult;
-
+    
     if (self.sessionManager != nil) {
-      pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Camera already started!"];
-      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-      return;
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Camera already started!"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
     }
     
     if (command.arguments.count > 3) {
@@ -46,15 +46,15 @@
             [self.viewController.view insertSubview:self.cameraRenderController.view atIndex:0];
         }
         else{
-             self.cameraRenderController.view.alpha = (CGFloat)[command.arguments[8] floatValue];
-
-             [self.viewController.view addSubview:self.cameraRenderController.view];
+            self.cameraRenderController.view.alpha = (CGFloat)[command.arguments[8] floatValue];
+            
+            [self.viewController.view addSubview:self.cameraRenderController.view];
         }
-
+        
         // Setup session
         self.sessionManager.delegate = self.cameraRenderController;
         [self.sessionManager setupSession:defaultCamera];
-
+        
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     } else {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid number of parameters"];
@@ -66,21 +66,21 @@
 - (void) stopCamera:(CDVInvokedUrlCommand*)command {
     NSLog(@"stopCamera");
     CDVPluginResult *pluginResult;
-
+    
     if(self.sessionManager != nil){
-        [self.cameraRenderController.view removeFromSuperview];       
+        [self.cameraRenderController.view removeFromSuperview];
         [self.cameraRenderController removeFromParentViewController];
         self.cameraRenderController = nil;
-
+        
         [self.sessionManager.session stopRunning];
         self.sessionManager = nil;
-
+        
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     }
     else {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Camera not started"];
     }
-
+    
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
@@ -101,14 +101,14 @@
 - (void) showCamera:(CDVInvokedUrlCommand*)command {
     NSLog(@"showCamera");
     CDVPluginResult *pluginResult;
-
+    
     if (self.cameraRenderController != nil) {
         [self.cameraRenderController.view setHidden:NO];
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     } else {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Camera not started"];
     }
-
+    
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
@@ -129,7 +129,7 @@
 - (void) takePicture:(CDVInvokedUrlCommand*)command {
     NSLog(@"takePicture");
     CDVPluginResult *pluginResult;
-
+    
     if (self.cameraRenderController != NULL) {
         CGFloat maxW = (CGFloat)[command.arguments[0] floatValue];
         CGFloat maxH = (CGFloat)[command.arguments[1] floatValue];
@@ -149,7 +149,7 @@
     NSLog(@"setColorEffect");
     CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     NSString *filterName = command.arguments[0];
-
+    
     if ([filterName isEqual: @"none"]) {
         dispatch_async(self.sessionManager.sessionQueue, ^{
             [self.sessionManager setCiFilter:nil];
@@ -181,17 +181,17 @@
     } else {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Filter not found"];
     }
-
+    
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 -(void) setBlurEffect:(CDVInvokedUrlCommand*)command {
     NSLog(@"setBlurEffect");
     CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-    NSString *filterValue = command.arguments[0];    
+    NSNumber *blurValue = command.arguments[0];
     dispatch_async(self.sessionManager.sessionQueue, ^{
         CIFilter *filter = [CIFilter filterWithName:@"CIGaussianBlur"];
-        [filter setDefaults];
+        [filter setValue:blurValue forKey:@"inputRadius"];
         [self.sessionManager setCiFilter:filter];
     });
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -216,45 +216,45 @@
 - (void) getSupportedPreviewSizes:(CDVInvokedUrlCommand*)command {
     NSLog(@"getSupportedPreviewSizes");
     CDVPluginResult *pluginResult;
-
+    
     if(self.sessionManager != nil){
-      pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"universal"];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"universal"];
     }
     else {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Camera not started"];
     }
-
+    
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 - (void) getSupportedPictureSizes:(CDVInvokedUrlCommand*)command {
     NSLog(@"getSupportedPictureSizes");
     CDVPluginResult *pluginResult;
-
+    
     if(self.sessionManager != nil){
-      NSArray *formats = self.sessionManager.getDeviceFormats;
-      NSMutableArray *jsonFormats = [NSMutableArray new];
-      int lastWidth = 0;
-      int lastHeight = 0;
-      for (AVCaptureDeviceFormat *format in formats) {
-        CMVideoDimensions dim = format.highResolutionStillImageDimensions;
-        if (dim.width!=lastWidth && dim.height != lastHeight) {
-          NSMutableDictionary *dimensions = [[NSMutableDictionary alloc] init];
-          NSNumber *width = [NSNumber numberWithInt:dim.width];
-          NSNumber *height = [NSNumber numberWithInt:dim.height];
-          [dimensions setValue:width forKey:@"width"];
-          [dimensions setValue:height forKey:@"height"];
-          [jsonFormats addObject:dimensions];
-          lastWidth = dim.width;
-          lastHeight = dim.height;
+        NSArray *formats = self.sessionManager.getDeviceFormats;
+        NSMutableArray *jsonFormats = [NSMutableArray new];
+        int lastWidth = 0;
+        int lastHeight = 0;
+        for (AVCaptureDeviceFormat *format in formats) {
+            CMVideoDimensions dim = format.highResolutionStillImageDimensions;
+            if (dim.width!=lastWidth && dim.height != lastHeight) {
+                NSMutableDictionary *dimensions = [[NSMutableDictionary alloc] init];
+                NSNumber *width = [NSNumber numberWithInt:dim.width];
+                NSNumber *height = [NSNumber numberWithInt:dim.height];
+                [dimensions setValue:width forKey:@"width"];
+                [dimensions setValue:height forKey:@"height"];
+                [jsonFormats addObject:dimensions];
+                lastWidth = dim.width;
+                lastHeight = dim.height;
+            }
         }
-      }
-      pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:jsonFormats];
-      
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:jsonFormats];
+        
     }
     else {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Camera not started"];
     }
-
+    
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
@@ -264,7 +264,7 @@
 
 - (NSString *)getBase64Image:(CGImageRef)imageRef {
     NSString *base64Image = nil;
-
+    
     @try {
         UIImage *image = [UIImage imageWithCGImage:imageRef];
         NSData *imageData = UIImageJPEGRepresentation(image, .8);
@@ -273,7 +273,7 @@
     @catch (NSException *exception) {
         NSLog(@"error while get base64Image: %@", [exception reason]);
     }
-
+    
     return base64Image;
 }
 
@@ -356,7 +356,7 @@
             CIImage *previewCImage = self.cameraRenderController.latestFrame;
             CGImageRef previewImage = [self.cameraRenderController.ciContext createCGImage:previewCImage fromRect:previewCImage.extent];
             [self.cameraRenderController.renderLock unlock];
-
+            
             NSData *imageData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:sampleBuffer];
             UIImage *capturedImage  = [[UIImage alloc] initWithData:imageData];
             
@@ -367,7 +367,7 @@
                 CGFloat scaleHeight = maxWidth/capturedImage.size.height;
                 CGFloat scaleWidth = maxHeight/capturedImage.size.width;
                 CGFloat scale = scaleHeight > scaleWidth ? scaleWidth : scaleHeight;
-
+                
                 CIFilter *resizeFilter = [CIFilter filterWithName:@"CILanczosScaleTransform"];
                 [resizeFilter setValue:[[CIImage alloc] initWithCGImage:[capturedImage CGImage]] forKey:kCIInputImageKey];
                 [resizeFilter setValue:[NSNumber numberWithFloat:1.0f] forKey:@"inputAspectRatio"];
@@ -383,12 +383,12 @@
             
             //fix front mirroring
             if (self.sessionManager.defaultCamera == AVCaptureDevicePositionFront) {
-               CGAffineTransform matrix = CGAffineTransformTranslate(CGAffineTransformMakeScale(1, -1), 0, capturedCImage.extent.size.height);
-               imageToFilter = [capturedCImage imageByApplyingTransform:matrix]; 
+                CGAffineTransform matrix = CGAffineTransformTranslate(CGAffineTransformMakeScale(1, -1), 0, capturedCImage.extent.size.height);
+                imageToFilter = [capturedCImage imageByApplyingTransform:matrix];
             } else {
-               imageToFilter = capturedCImage;                    
+                imageToFilter = capturedCImage;
             }
-
+            
             CIFilter *filter = [self.sessionManager ciFilter];
             if (filter != nil) {
                 [self.sessionManager.filterLock lock];
@@ -398,17 +398,17 @@
             } else {
                 finalCImage = imageToFilter;
             }
- 
+            
             CGImageRef finalImage = [self.cameraRenderController.ciContext createCGImage:finalCImage fromRect:finalCImage.extent];
             
             ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
-
+            
             dispatch_group_t group = dispatch_group_create();
-
+            
             __block NSString *originalPicturePath;
             __block NSString *previewPicturePath;
             __block NSError *photosAlbumError;
-
+            
             ALAssetOrientation orientation;
             switch ([[UIApplication sharedApplication] statusBarOrientation]) {
                 case UIDeviceOrientationPortraitUpsideDown:
@@ -424,7 +424,7 @@
                 default:
                     orientation = ALAssetOrientationRight;
             }
-
+            
             // task 1
             dispatch_group_enter(group);
             [library writeImageToSavedPhotosAlbum:previewImage orientation:ALAssetOrientationUp completionBlock:^(NSURL *assetURL, NSError *error) {
@@ -432,12 +432,12 @@
                     NSLog(@"FAILED to save Preview picture.");
                     photosAlbumError = error;
                 } else {
-                     previewPicturePath = [assetURL absoluteString];
-                     NSLog(@"previewPicturePath: %@", previewPicturePath);
+                    previewPicturePath = [assetURL absoluteString];
+                    NSLog(@"previewPicturePath: %@", previewPicturePath);
                 }
                 dispatch_group_leave(group);
             }];
-                
+            
             //task 2
             dispatch_group_enter(group);
             [library writeImageToSavedPhotosAlbum:finalImage orientation:orientation completionBlock:^(NSURL *assetURL, NSError *error) {
@@ -450,7 +450,7 @@
                 }
                 dispatch_group_leave(group);
             }];
-
+            
             dispatch_group_notify(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
                 NSMutableArray *params = [[NSMutableArray alloc] init];
                 if (photosAlbumError) {
@@ -469,7 +469,7 @@
                     NSString *base64Image = [self getBase64Image:resultFinalImage];
                     [params addObject:base64Image];
                 }
-             
+                
                 CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:params];
                 [pluginResult setKeepCallbackAsBool:true];
                 [self.commandDelegate sendPluginResult:pluginResult callbackId:self.onPictureTakenHandlerId];
